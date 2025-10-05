@@ -290,7 +290,9 @@ const App = () => (
               path="/admin/installation-teams"
               element={
                 <ProtectedRoute requireAdmin>
-                  <InstallationTeams />
+                  <MainLayout>
+                    <InstallationTeams />
+                  </MainLayout>
                 </ProtectedRoute>
               }
             />
