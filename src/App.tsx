@@ -30,6 +30,7 @@ import CustomerBilling from "./pages/CustomerBilling";
 import RevenueManagement from "./pages/RevenueManagement";
 import ExpenseManagement from "./pages/ExpenseManagement";
 import PrintInvoices from "./pages/PrintInvoices";
+import InstallationTeams from "./pages/InstallationTeams";
 import { MainLayout } from "@/components/Layout/MainLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -282,6 +283,14 @@ const App = () => (
                   <MainLayout>
                     <ContractView />
                   </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/installation-teams"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <InstallationTeams />
                 </ProtectedRoute>
               }
             />

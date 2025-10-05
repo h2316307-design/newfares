@@ -25,6 +25,7 @@ import {
 } from '@/services/contractService';
 import { Billboard } from '@/types';
 import { ContractPDFDialog } from '@/components/Contract';
+import InstallationPDFDialog from './InstallationPDFDialog';
 
 export default function Contracts() {
   const [contracts, setContracts] = useState<Contract[]>([]);
@@ -34,6 +35,8 @@ export default function Contracts() {
   const [viewOpen, setViewOpen] = useState(false);
   const [pdfOpen, setPdfOpen] = useState(false);
   const [selectedContractForPDF, setSelectedContractForPDF] = useState<any>(null);
+  const [installationPdfOpen, setInstallationPdfOpen] = useState(false);
+  const [selectedContractForInstallation, setSelectedContractForInstallation] = useState<any>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedContract, setSelectedContract] = useState<any>(null);
@@ -159,6 +162,17 @@ export default function Contracts() {
   };
 
   const handlePrintInstallationNew = async (contract: Contract) => {
+    try {
+      const contractWithBillboards = await getContractWithBillboards(String(contract.id));
+      setSelectedContractForInstallation(contractWithBillboards);
+      setInstallationPdfOpen(true);
+    } catch (error) {
+      console.error('خطأ في جلب تفاصيل العقد للتركيب:', error);
+      toast.error('فشل في جلب تفاصيل العقد');
+    }
+  };
+
+  const handlePrintInstallationOld = async (contract: Contract) => {
     try {
       const data = await getContractWithBillboards(String(contract.id));
       const boards: any[] = Array.isArray((data as any).billboards) ? (data as any).billboards : [];
@@ -835,6 +849,13 @@ export default function Contracts() {
         open={pdfOpen}
         onOpenChange={setPdfOpen}
         contract={selectedContractForPDF}
+      />
+
+      {/* Installation PDF Dialog */}
+      <InstallationPDFDialog
+        open={installationPdfOpen}
+        onOpenChange={setInstallationPdfOpen}
+        contract={selectedContractForInstallation}
       />
 
       {/* Renew Dialog */}
