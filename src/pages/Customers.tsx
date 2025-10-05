@@ -696,7 +696,7 @@ export default function Customers() {
             <th>رقم العقد</th>
             <th>نوع الإعلان</th>
             <th>تاريخ البداية</th>
-            <th>تاريخ النهاية</th>
+            <th>تاريخ ال��هاية</th>
             <th>المبلغ</th>
           </tr>
         </thead>
@@ -831,7 +831,7 @@ export default function Customers() {
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <Input placeholder="اسم الزبون" value={customerNameInput} onChange={(e)=>setCustomerNameInput(e.target.value)} />
-                <Input placeholder="هاتف" value={customerPhoneInput} onChange={(e)=>setCustomerPhoneInput(e.target.value)} />
+                <Input placeholder="ه��تف" value={customerPhoneInput} onChange={(e)=>setCustomerPhoneInput(e.target.value)} />
                 <Input placeholder="اسم الشركة" value={customerCompanyInput} onChange={(e)=>setCustomerCompanyInput(e.target.value)} />
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setNewCustomerOpen(false)}>إلغاء</Button>
@@ -974,7 +974,7 @@ export default function Customers() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>عقود العميل ({customerContracts.length})</span>
-                    <span className="text-sm text-muted-foreground">إجمالي قيمة العقود</span>
+                    <span className="text-sm text-muted-foreground">إجمال�� قيمة العقود</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1149,12 +1149,12 @@ export default function Customers() {
             {addType !== 'account_payment' && (
               <div>
                 <label className="text-sm font-medium">العقد</label>
-                <Select value={addContract} onValueChange={setAddContract}>
+                <Select value={addContract} onValueChange={(v) => setAddContract(v === '__account__' ? '' : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="اختر عقدًا أو اتركه فارغاً للحساب العام" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
-                    <SelectItem value="">حساب عام (بدون عقد محدد)</SelectItem>
+                    <SelectItem value="__account__">حساب عام (بدون عقد محدد)</SelectItem>
                     {customerContracts.map((ct)=> (
                       <SelectItem key={String(ct.Contract_Number)} value={String(ct.Contract_Number)}>{String(ct.Contract_Number)}</SelectItem>
                     ))}
