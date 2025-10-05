@@ -63,7 +63,7 @@ export default function InstallationPDFDialog({ open, onOpenChange, contract }: 
 
       if (data) {
         setInstallationTeams(data.map(team => ({
-          id: team.id,
+          id: String(team.id ?? (team as any).team_id ?? team.team_name ?? ''),
           team_name: team.team_name,
           sizes: Array.isArray(team.sizes) ? team.sizes : []
         })));
@@ -715,12 +715,12 @@ export default function InstallationPDFDialog({ open, onOpenChange, contract }: 
             <>
               <div className="bg-gradient-to-br from-card to-primary/10 p-4 rounded-lg border border-primary/30">
                 <h3 className="font-semibold mb-2 text-primary">اختيار فرقة التركيب:</h3>
-                <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+                <Select value={selectedTeamId} onValueChange={(v) => setSelectedTeamId(v === '__all__' ? '' : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="اختر فرقة التركيب (اختياري)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">الكل</SelectItem>
+                    <SelectItem value="__all__">الكل</SelectItem>
                     {installationTeams.map((team) => (
                       <SelectItem key={team.id} value={team.id}>
                         {team.team_name} ({team.sizes.length} مقاس)
