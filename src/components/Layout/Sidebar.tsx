@@ -53,7 +53,7 @@ const sidebarSections: SidebarSection[] = [
       { id: 'revenue_management', label: 'إدارة الإيرادات', icon: TrendingUp, path: '/admin/revenue-management' },
       { id: 'expense_management', label: 'إدارة المصروفات', icon: TrendingDown, path: '/admin/expense-management' },
       { id: 'payments', label: 'الدفعات والإيصالات', icon: CreditCard, path: '/admin/payments' },
-      { id: 'print_invoices', label: 'فواتير الطباعة', icon: Printer, path: '/admin/print-invoices' },
+      { id: 'print_invoices', label: 'فو��تير الطباعة', icon: Printer, path: '/admin/print-invoices' },
       { id: 'expenses', label: 'المصروفات القديمة', icon: DollarSign, path: '/admin/expenses' },
     ],
   },
@@ -67,6 +67,7 @@ const sidebarSections: SidebarSection[] = [
     title: 'أخرى',
     items: [
       { id: 'booking_requests', label: 'طلبات الحجز', icon: Calendar, path: '/admin/booking-requests' },
+      { id: 'installation_teams', label: 'فرق التركيب', icon: Wrench, path: '/admin/installation-teams' },
       { id: 'users', label: 'المستخدمين', icon: Users, path: '/admin/users' },
       { id: 'reports', label: 'التقارير والإحصائيات', icon: BarChart3, path: '/admin/reports' },
       { id: 'settings', label: 'الإعدادات', icon: Settings, path: '/admin/settings' },
