@@ -90,7 +90,8 @@ export default function InstallationTeams() {
         })));
       }
     } catch (error) {
-      console.error('Error loading teams:', error);
+      const msg = (error as any)?.message || JSON.stringify(error);
+      console.error('Error loading teams:', msg);
       toast.error('خطأ في تحميل فرق التركيب');
     } finally {
       setLoading(false);
