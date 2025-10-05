@@ -62,11 +62,12 @@ export default function InstallationPDFDialog({ open, onOpenChange, contract }: 
       if (error) throw error;
 
       if (data) {
-        setInstallationTeams(data.map(team => ({
-          id: String(team.id ?? (team as any).team_id ?? team.team_name ?? ''),
-          team_name: team.team_name,
+        const teams = data.map((team: any) => ({
+          id: String(team.id ?? team.team_id ?? team.team_name ?? ''),
+          team_name: String(team.team_name ?? ''),
           sizes: Array.isArray(team.sizes) ? team.sizes : []
-        })));
+        })).filter((t: any) => t.id);
+        setInstallationTeams(teams);
       }
     } catch (error) {
       console.error('Error loading installation teams:', error);
