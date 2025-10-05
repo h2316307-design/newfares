@@ -34,14 +34,19 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { MultiSelect } from '@/components/ui/multi-select';
+import { Textarea } from '@/components/ui/textarea';
 
 interface InstallationTeam {
   id: string;
   team_name: string;
-  sizes: string[];
+  sizes?: string[]; // legacy names
+  sizes_ids?: string[]; // new: ids from sizes table (as strings)
+  notes?: string | null;
   created_at: string;
   updated_at: string;
 }
+
+type SizeRow = { id: string | number; name: string; width: number | null; height: number | null; description: string | null };
 
 export default function InstallationTeams() {
   const [teams, setTeams] = useState<InstallationTeam[]>([]);
@@ -52,21 +57,28 @@ export default function InstallationTeams() {
   const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     team_name: '',
-    sizes: [] as string[]
+    sizesIds: [] as string[],
+    notes: '' as string,
   });
-  const [availableSizes, setAvailableSizes] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<SizeRow[]>([]);
 
   const loadAvailableSizes = async () => {
     try {
       const { data, error } = await supabase
-        .from('billboards')
-        .select('Size')
-        .not('Size', 'is', null);
+        .from('sizes')
+        .select('id, name, width, height, description')
+        .order('sort_order', { ascending: true })
+        .order('name', { ascending: true });
 
       if (error) throw error;
 
-      const uniqueSizes = [...new Set(data.map(item => String(item.Size)).filter(Boolean))];
-      setAvailableSizes(uniqueSizes.sort());
+      setSizes((data || []).map((r: any) => ({
+        id: r.id,
+        name: String(r.name || ''),
+        width: r.width ?? null,
+        height: r.height ?? null,
+        description: r.description ?? null,
+      })));
     } catch (error) {
       console.error('Error loading sizes:', error);
       toast.error('خطأ في تحميل المقاسات');
@@ -84,9 +96,14 @@ export default function InstallationTeams() {
       if (error) throw error;
 
       if (data) {
-        setTeams(data.map(team => ({
-          ...team,
-          sizes: Array.isArray(team.sizes) ? team.sizes : []
+        setTeams(data.map((team: any) => ({
+          id: String(team.id),
+          team_name: String(team.team_name || ''),
+          sizes: Array.isArray(team.sizes) ? team.sizes : undefined,
+          sizes_ids: Array.isArray(team.sizes_ids) ? team.sizes_ids.map((x: any) => String(x)) : undefined,
+          notes: team.notes ?? null,
+          created_at: team.created_at,
+          updated_at: team.updated_at,
         })));
       }
     } catch (error) {
@@ -108,13 +125,15 @@ export default function InstallationTeams() {
       setEditingTeam(team);
       setFormData({
         team_name: team.team_name,
-        sizes: team.sizes
+        sizesIds: (team.sizes_ids ?? []).map(String),
+        notes: String(team.notes ?? ''),
       });
     } else {
       setEditingTeam(null);
       setFormData({
         team_name: '',
-        sizes: []
+        sizesIds: [],
+        notes: '',
       });
     }
     setIsDialogOpen(true);
@@ -125,7 +144,8 @@ export default function InstallationTeams() {
     setEditingTeam(null);
     setFormData({
       team_name: '',
-      sizes: []
+      sizesIds: [],
+      notes: '',
     });
   };
 
@@ -135,28 +155,49 @@ export default function InstallationTeams() {
       return;
     }
 
+    // Prepare payloads: prefer sizes_ids + notes; fallback to legacy sizes (names)
+    const idToName = new Map(sizes.map((s) => [String(s.id), s.name] as const));
+    const legacyNames = formData.sizesIds.map((id) => idToName.get(id)).filter(Boolean) as string[];
+
     try {
       if (editingTeam) {
+        // Try new schema first
         const { error } = await supabase
           .from('installation_teams')
           .update({
             team_name: formData.team_name,
-            sizes: formData.sizes,
-            updated_at: new Date().toISOString()
+            sizes_ids: formData.sizesIds,
+            notes: formData.notes || null,
+            updated_at: new Date().toISOString(),
           })
           .eq('id', editingTeam.id);
 
-        if (error) throw error;
+        if (error) {
+          // Retry legacy columns
+          const { error: err2 } = await supabase
+            .from('installation_teams')
+            .update({
+              team_name: formData.team_name,
+              sizes: legacyNames,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', editingTeam.id);
+          if (err2) throw err2;
+        }
         toast.success('تم تحديث الفرقة بنجاح');
       } else {
+        // Insert new schema first
         const { error } = await supabase
           .from('installation_teams')
-          .insert([{
-            team_name: formData.team_name,
-            sizes: formData.sizes
-          }]);
+          .insert([{ team_name: formData.team_name, sizes_ids: formData.sizesIds, notes: formData.notes || null }]);
 
-        if (error) throw error;
+        if (error) {
+          // Retry legacy insert
+          const { error: err2 } = await supabase
+            .from('installation_teams')
+            .insert([{ team_name: formData.team_name, sizes: legacyNames }]);
+          if (err2) throw err2;
+        }
         toast.success('تم إضافة الفرقة بنجاح');
       }
 
@@ -215,7 +256,7 @@ export default function InstallationTeams() {
           <CardHeader>
             <CardTitle>قائمة فرق التركيب</CardTitle>
             <CardDescription>
-              عرض وإدارة جميع فرق التركيب في النظام
+              عرض وإدارة جميع فرق التركيب في ال��ظام
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -237,58 +278,68 @@ export default function InstallationTeams() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>اسم الفرقة</TableHead>
-                    <TableHead>المقاسات</TableHead>
+                    <TableHead>المقاسات المختصة</TableHead>
+                    <TableHead>الملاحظات</TableHead>
                     <TableHead>عدد المقاسات</TableHead>
                     <TableHead>تاريخ الإنشاء</TableHead>
                     <TableHead className="text-left">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teams.map((team) => (
-                    <TableRow key={team.id}>
-                      <TableCell className="font-medium">{team.team_name}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {team.sizes.slice(0, 3).map((size, index) => (
-                            <span
-                              key={index}
-                              className="inline-block px-2 py-1 text-xs bg-primary/10 text-primary rounded"
+                  {teams.map((team) => {
+                    const idToLabel = new Map(
+                      sizes.map((s) => [String(s.id), `${s.name}${s.width && s.height ? ` (${s.width}x${s.height})` : ''}${s.description ? ` — ${s.description}` : ''}`] as const),
+                    );
+                    const labels = (team.sizes_ids ?? []).map((id) => idToLabel.get(String(id))).filter(Boolean) as string[];
+                    const legacyLabels = team.sizes ?? [];
+                    const display = labels.length ? labels : legacyLabels;
+                    return (
+                      <TableRow key={team.id}>
+                        <TableCell className="font-medium">{team.team_name}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {display.slice(0, 3).map((lab, index) => (
+                              <span
+                                key={index}
+                                className="inline-block px-2 py-1 text-xs bg-primary/10 text-primary rounded"
+                              >
+                                {lab}
+                              </span>
+                            ))}
+                            {display.length > 3 && (
+                              <span className="inline-block px-2 py-1 text-xs bg-muted text-muted-foreground rounded">
+                                +{display.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[260px] truncate">{team.notes || ''}</TableCell>
+                        <TableCell>{display.length}</TableCell>
+                        <TableCell>
+                          {new Date(team.created_at).toLocaleDateString('ar-LY')}
+                        </TableCell>
+                        <TableCell className="text-left">
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenDialog(team)}
                             >
-                              {size}
-                            </span>
-                          ))}
-                          {team.sizes.length > 3 && (
-                            <span className="inline-block px-2 py-1 text-xs bg-muted text-muted-foreground rounded">
-                              +{team.sizes.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{team.sizes.length}</TableCell>
-                      <TableCell>
-                        {new Date(team.created_at).toLocaleDateString('ar-LY')}
-                      </TableCell>
-                      <TableCell className="text-left">
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenDialog(team)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenDeleteDialog(team.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenDeleteDialog(team.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}
@@ -311,27 +362,37 @@ export default function InstallationTeams() {
                 <Label htmlFor="team_name">اسم الفرقة</Label>
                 <Input
                   id="team_name"
-                  placeholder="مثال: فرقة التركيب الأولى"
+                  placeholder="مثال: فرقة ال��ركيب الأولى"
                   value={formData.team_name}
                   onChange={(e) => setFormData({ ...formData, team_name: e.target.value })}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sizes">المقاسات المرتبطة</Label>
-                <MultiSelect
-                  options={availableSizes.map(size => ({
-                    label: size,
-                    value: size
-                  }))}
-                  selected={formData.sizes}
-                  onChange={(selected) => setFormData({ ...formData, sizes: selected })}
-                  placeholder="اختر المقاسات..."
-                />
-                <p className="text-xs text-muted-foreground">
-                  اختر المقاسات التي ستقوم هذه الفرقة بتركيبها
-                </p>
-              </div>
+              <Label htmlFor="sizes">المقاسات المرتبطة</Label>
+              <MultiSelect
+                options={sizes.map((s) => ({
+                  value: String(s.id),
+                  label: `${s.name}${s.width && s.height ? ` (${s.width}x${s.height})` : ''}${s.description ? ` — ${s.description}` : ''}`,
+                }))}
+                value={formData.sizesIds}
+                onChange={(next) => setFormData({ ...formData, sizesIds: next })}
+                placeholder="اختر المقاسات..."
+              />
+              <p className="text-xs text-muted-foreground">
+                اختر المقاسات التي ستقوم هذه الفرقة بتركيبها
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">الملاحظات</Label>
+              <Textarea
+                id="notes"
+                placeholder="ملاحظات إضافية عن الفرقة أو المهام"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              />
+            </div>
             </div>
 
             <DialogFooter>
