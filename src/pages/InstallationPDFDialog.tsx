@@ -70,7 +70,8 @@ export default function InstallationPDFDialog({ open, onOpenChange, contract }: 
         setInstallationTeams(teams);
       }
     } catch (error) {
-      console.error('Error loading installation teams:', error);
+      const msg = (error as any)?.message || JSON.stringify(error);
+      console.error('Error loading installation teams:', msg);
       toast.error('خطأ في تحميل فرق التركيب');
     }
   };
@@ -795,7 +796,7 @@ export default function InstallationPDFDialog({ open, onOpenChange, contract }: 
                   disabled={isGenerating}
                 >
                   <Printer className="h-4 w-4 ml-2" />
-                  {printMode === 'auto' ? 'طباعة تلقائية' : 'معاينة وطباعة'}
+                  {printMode === 'auto' ? 'طباعة تلق��ئية' : 'معاينة وطباعة'}
                 </Button>
               </div>
             </>
