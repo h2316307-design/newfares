@@ -22,6 +22,7 @@ interface InstallationTeam {
   id: string;
   team_name: string;
   sizes: string[];
+  sizes_ids?: string[];
 }
 
 const formatArabicNumber = (num: number): string => {
@@ -65,7 +66,8 @@ export default function InstallationPDFDialog({ open, onOpenChange, contract }: 
         const teams = data.map((team: any) => ({
           id: String(team.id ?? team.team_id ?? team.team_name ?? ''),
           team_name: String(team.team_name ?? ''),
-          sizes: Array.isArray(team.sizes) ? team.sizes : []
+          sizes: Array.isArray(team.sizes) ? team.sizes : [],
+          sizes_ids: Array.isArray(team.sizes_ids) ? team.sizes_ids.map((x: any) => String(x)) : undefined,
         })).filter((t: any) => t.id);
         setInstallationTeams(teams);
       }
@@ -175,13 +177,75 @@ export default function InstallationPDFDialog({ open, onOpenChange, contract }: 
   };
 
   const getBillboardsData = async () => {
-    let billboardsToShow = [];
+    // 1) Try contract_boards + join data via separate queries (robust to missing FK)
+    const contractId = String(contract?.id ?? contract?.Contract_ID ?? contract?.Contract_Number ?? '');
+    try {
+      if (contractId) {
+        const { data: cbRows, error: cbErr } = await supabase
+          .from('contract_boards')
+          .select('*')
+          .eq('contract_id', contractId);
+        if (cbErr) throw cbErr;
+        if (Array.isArray(cbRows) && cbRows.length > 0) {
+          const billboardIds = Array.from(new Set(cbRows.map((r: any) => String(r.billboard_id)).filter(Boolean)));
+          const sizeIds = Array.from(new Set(cbRows.map((r: any) => String(r.size_id)).filter(Boolean)));
+
+          const [billRes, sizeRes] = await Promise.all([
+            billboardIds.length
+              ? supabase.from('billboards').select('*').in('ID', billboardIds)
+              : Promise.resolve({ data: [], error: null } as any),
+            sizeIds.length
+              ? supabase.from('sizes').select('id,name,width,height').in('id', sizeIds)
+              : Promise.resolve({ data: [], error: null } as any),
+          ]);
+
+          const boards = (billRes.data || []) as any[];
+          const sizes = (sizeRes.data || []) as any[];
+          const boardsById = new Map(boards.map((b: any) => [String(b.ID ?? b.id), b] as const));
+          const sizesById = new Map(sizes.map((s: any) => [String(s.id), s] as const));
+
+          const merged = cbRows.map((row: any) => {
+            const bb = boardsById.get(String(row.billboard_id)) || {};
+            const sz = sizesById.get(String(row.size_id)) || {};
+            const width = sz?.width != null ? String(sz.width) : '';
+            const height = sz?.height != null ? String(sz.height) : '';
+            const sizeText = width && height ? `${width}x${height}` : (String(bb.Size ?? bb.size ?? '') || '');
+            return {
+              // fields consumed by norm()
+              ID: row.billboard_id ?? bb.ID ?? bb.id,
+              Billboard_Name: bb.Billboard_Name ?? bb.name ?? row.billboard_code ?? row.billboard_name ?? '',
+              Municipality: bb.Municipality ?? bb.city ?? '',
+              District: bb.District ?? bb.district ?? '',
+              Nearest_Landmark: bb.Nearest_Landmark ?? bb.location ?? bb.landmark ?? '',
+              Size: sizeText,
+              Faces: bb.Number_of_Faces ?? bb.Faces ?? bb.faces_count ?? 1,
+              ad_type: row.ad_type ?? row.Ad_Type ?? 'غير محدد',
+              Image_URL: bb.Image_URL ?? bb.image ?? bb.billboard_image ?? bb.image_url ?? '',
+              face_a_image: row.face_a_image ?? '',
+              face_b_image: row.face_b_image ?? '',
+              GPS_Coordinates: bb.GPS_Coordinates ?? '',
+              Latitude: bb.Latitude ?? null,
+              Longitude: bb.Longitude ?? null,
+              // extra for filtering by sizes_ids
+              size_id: row.size_id ? String(row.size_id) : undefined,
+            };
+          });
+
+          return merged;
+        }
+      }
+    } catch (e) {
+      console.warn('contract_boards lookup failed or empty; will fallback:', (e as any)?.message || e);
+    }
+
+    // 2) Fallbacks: billboard_ids, embedded billboards, saved_billboards_data
+    let billboardsToShow: any[] = [];
 
     const billboardIds = contract?.billboard_ids;
     if (billboardIds) {
       try {
         const idsArray = typeof billboardIds === 'string'
-          ? billboardIds.split(',').map(id => id.trim()).filter(Boolean)
+          ? billboardIds.split(',').map((id: string) => id.trim()).filter(Boolean)
           : Array.isArray(billboardIds) ? billboardIds : [];
 
         if (idsArray.length > 0) {
@@ -255,11 +319,18 @@ export default function InstallationPDFDialog({ open, onOpenChange, contract }: 
 
       if (selectedTeamId) {
         const selectedTeam = installationTeams.find(t => t.id === selectedTeamId);
-        if (selectedTeam && selectedTeam.sizes.length > 0) {
-          billboardsToShow = billboardsToShow.filter((billboard: any) => {
-            const size = String(billboard.Size ?? billboard.size ?? '');
-            return selectedTeam.sizes.includes(size);
-          });
+        if (selectedTeam) {
+          if (selectedTeam.sizes_ids && selectedTeam.sizes_ids.length > 0) {
+            billboardsToShow = billboardsToShow.filter((billboard: any) => {
+              const sid = String(billboard.size_id ?? '');
+              return sid && selectedTeam.sizes_ids!.includes(sid);
+            });
+          } else if (selectedTeam.sizes && selectedTeam.sizes.length > 0) {
+            billboardsToShow = billboardsToShow.filter((billboard: any) => {
+              const size = String(billboard.Size ?? billboard.size ?? '');
+              return selectedTeam.sizes!.includes(size);
+            });
+          }
         }
       }
 
@@ -347,7 +418,7 @@ export default function InstallationPDFDialog({ open, onOpenChange, contract }: 
                             <td>${r.size}</td>
                             <td>${r.faces}</td>
                             <td>${r.adType}</td>
-                            <td class="c-img">${r.faceAImage ? `<img src="${r.faceAImage}" alt="الوجه A" onerror="this.style.display='none'" />` : ''}</td>
+                            <td class="c-img">${r.faceAImage ? `<img src="${r.faceAImage}" alt="��لوجه A" onerror="this.style.display='none'" />` : ''}</td>
                             <td class="c-img">${r.faceBImage ? `<img src="${r.faceBImage}" alt="الوجه B" onerror="this.style.display='none'" />` : '—'}</td>
                             <td>${r.mapLink ? `<a href="${r.mapLink}" target="_blank" rel="noopener">اضغط هنا</a>` : ''}</td>
                           </tr>`
