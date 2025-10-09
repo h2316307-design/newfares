@@ -36,6 +36,7 @@ const sidebarSections: SidebarSection[] = [
       { id: 'billboard_maintenance', label: 'صيانة اللوحات', icon: Wrench, path: '/admin/billboard-maintenance' },
       { id: 'shared_billboards', label: 'اللوحات المشتركة', icon: FileText, path: '/admin/shared-billboards' },
       { id: 'shared_companies', label: 'الشركات المشاركة', icon: FileText, path: '/admin/shared-companies' },
+      { id: 'partnership_dashboard', label: 'توزيع حصص الشركاء', icon: BarChart3, path: '/admin/partnership-dashboard' },
     ],
   },
   {
