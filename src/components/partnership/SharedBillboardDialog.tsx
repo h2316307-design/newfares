@@ -38,7 +38,7 @@ export function SharedBillboardDialog({ trigger, billboard, onSaved }: Props) {
 
   const load = async () => {
     try {
-      const { data: partners } = await supabase.from('partners').select('id,name,phone').order('name');
+      const { data: partners } = await supabase.from('partners').select('id,name,phone,default_partner_pre_pct,default_partner_post_pct,default_capital_contribution').order('name');
       setAllPartners(partners || []);
 
       const { data: sbLinks } = await supabase
