@@ -98,16 +98,17 @@ export default function SharedBillboards() {
           type: 'rental_income'
         });
 
-        const partners = Array.isArray(bb.partner_companies)
-          ? bb.partner_companies
-          : (bb.partner_companies ? String(bb.partner_companies).split(',').map((s: any) => s.trim()).filter(Boolean) : []);
+        if (split.partners && split.partners.length > 0) {
+          const partnerNames: Record<string,string> = {};
+          try {
+            const { data: ps } = await supabase.from('partners').select('id,name');
+            (ps||[]).forEach((p:any)=>{ partnerNames[p.id]=p.name; });
+          } catch {}
 
-        if (partners.length > 0) {
-          const perPartner = Number(split.partner || 0) / partners.length;
-          const inserts = partners.map((p: any) => ({
+          const inserts = split.partners.map((p:any) => ({
             billboard_id: bb.ID || bb.id,
-            beneficiary: p,
-            amount: perPartner,
+            beneficiary: partnerNames[p.id] || p.id,
+            amount: (split.phase==='recovery' ? p.pre : p.post) * rent,
             type: 'rental_income'
           }));
           await supabase.from('shared_transactions').insert(inserts as any[]);
@@ -200,7 +201,7 @@ export default function SharedBillboards() {
               <ul className="text-xs space-y-1">
                 <li>• الفارس: 35% من الإيجار</li>
                 <li>• الشريك: 35% من الإيجار</li>
-                <li>• رأس المال: 30% من الإيج��ر</li>
+                <li>• رأس المال: 30% من الإيجار</li>
               </ul>
             </div>
             <div className="bg-white p-3 rounded-lg border border-green-100">
