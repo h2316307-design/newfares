@@ -128,10 +128,10 @@ export default function SharedBillboards() {
 
       const phase = split.phase === 'recovery' ? 'مرحلة استرداد رأس المال' : 'مرحلة توزيع الأرباح';
       toast.success(
-        `تم تطبيق الإيجار (${phase})\n` +
-        `• الفارس: ${split.company.toLocaleString()} د.ل (${split.phase === 'recovery' ? '35%' : '50%'})\n` +
-        `• الشريك: ${split.partner.toLocaleString()} د.ل (${split.phase === 'recovery' ? '35%' : '50%'})\n` +
-        (split.deduct > 0 ? `• خصم رأس المال: ${split.deduct.toLocaleString()} د.ل (30%)` : ''),
+        `تم تطبيق الإيجار (${phase})` +
+        `\n• الفارس: ${split.company.toLocaleString()} د.ل` +
+        `\n• الشركاء: ${split.partnerTotal.toLocaleString()} د.ل` +
+        (split.deduct > 0 ? `\n• خصم رأس المال: ${split.deduct.toLocaleString()} د.ل` : ''),
         { duration: 5000 }
       );
 
@@ -188,7 +188,7 @@ export default function SharedBillboards() {
     <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold">اللوحات المشتركة</h1>
-        <p className="text-muted-foreground mt-2">إدارة اللوحات الإعلانية المشتركة مع الشركاء</p>
+        <p className="text-muted-foreground mt-2">إدارة اللوحات الإعلان��ة المشتركة مع الشركاء</p>
       </div>
 
       <Alert className="bg-blue-50 border-blue-200">
