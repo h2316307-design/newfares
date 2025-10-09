@@ -78,7 +78,7 @@ export function SharedBillboardDialog({ trigger, billboard, onSaved }: Props) {
     const p = allPartners.find(p=>p.id===partnerId);
     if (!p) return;
     if (rows.some(r=>r.id===partnerId)) { toast.error('تم إضافة الشريك بالفعل'); return; }
-    setRows(r=>[...r, { id: p.id, name: p.name, phone: p.phone, capital_contribution: 0, capital_remaining: 0, partner_pre_pct: 35, partner_post_pct: 50 }]);
+    setRows(r=>[...r, { id: p.id, name: p.name, phone: p.phone, capital_contribution: Number(p.default_capital_contribution||0), capital_remaining: Number(p.default_capital_contribution||0), partner_pre_pct: Number(p.default_partner_pre_pct ?? 35), partner_post_pct: Number(p.default_partner_post_pct ?? 50) }]);
   };
 
   const removeRow = (partnerId: string) => {
