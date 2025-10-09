@@ -30,7 +30,7 @@ export default function SharedCompanies() {
     try {
       const { data, error } = await supabase.from('partners').insert({ name }).select().single();
       if (error) throw error;
-      toast.success('ت��ت الإضافة');
+      toast.success('تمت الإضافة');
       setNewName('');
       load();
     } catch (e:any) { console.error(e); toast.error(e?.message || 'فشل الإضافة'); }
@@ -74,6 +74,7 @@ export default function SharedCompanies() {
               {companies.map(c => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">{c.name}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{c.phone || '-'}</TableCell>
                   <TableCell>
                     <Button size="sm" onClick={async () => {
                       const { data, error } = await supabase.rpc('shared_company_summary', { p_beneficiary: c.name });
@@ -84,7 +85,9 @@ export default function SharedCompanies() {
                   </TableCell>
                   <TableCell>-</TableCell>
                   <TableCell>-</TableCell>
-                  <TableCell>-</TableCell>
+                  <TableCell>
+                    <PartnerDialog partner={c} onSaved={load} trigger={<Button size="sm" variant="outline">تعديل</Button>} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
