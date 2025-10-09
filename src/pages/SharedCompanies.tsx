@@ -30,7 +30,7 @@ export default function SharedCompanies() {
     try {
       const { data, error } = await supabase.from('partners').insert({ name }).select().single();
       if (error) throw error;
-      toast.success('تمت الإضافة');
+      toast.success('ت��ت الإضافة');
       setNewName('');
       load();
     } catch (e:any) { console.error(e); toast.error(e?.message || 'فشل الإضافة'); }
@@ -63,10 +63,11 @@ export default function SharedCompanies() {
             <TableHeader>
               <TableRow>
                 <TableHead>اسم الشركة</TableHead>
+                <TableHead>الهاتف</TableHead>
                 <TableHead>الإجمالي (المستحق)</TableHead>
                 <TableHead>المقبوض</TableHead>
                 <TableHead>المتبقي</TableHead>
-                <TableHead>إجر��ءات</TableHead>
+                <TableHead>إجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
