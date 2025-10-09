@@ -15,7 +15,7 @@ export default function SharedCompanies() {
   const load = async () => {
     setLoading(true);
     try {
-      const { data } = await supabase.from('partners').select('id,name').order('name');
+      const { data } = await supabase.from('partners').select('id,name,phone').order('name');
       setCompanies(data || []);
     } catch (e:any) {
       console.error(e);
