@@ -31,6 +31,7 @@ import RevenueManagement from "./pages/RevenueManagement";
 import ExpenseManagement from "./pages/ExpenseManagement";
 import PrintInvoices from "./pages/PrintInvoices";
 import InstallationTeams from "./pages/InstallationTeams";
+import PartnershipDashboard from "./pages/PartnershipDashboard";
 import { MainLayout } from "@/components/Layout/MainLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -122,6 +123,16 @@ const App = () => (
                 <ProtectedRoute requireAdmin>
                   <MainLayout>
                     <SharedCompanies />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/partnership-dashboard"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <MainLayout>
+                    <PartnershipDashboard />
                   </MainLayout>
                 </ProtectedRoute>
               }
