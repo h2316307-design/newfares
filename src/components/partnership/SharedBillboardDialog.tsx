@@ -26,7 +26,7 @@ interface Props {
 
 export function SharedBillboardDialog({ trigger, billboard, onSaved }: Props) {
   const [open, setOpen] = useState(false);
-  const [allPartners, setAllPartners] = useState<{ id: string; name: string; phone?: string | null }[]>([]);
+  const [allPartners, setAllPartners] = useState<{ id: string; name: string; phone?: string | null; default_partner_pre_pct?: number; default_partner_post_pct?: number; default_capital_contribution?: number }[]>([]);
   const [rows, setRows] = useState<PartnerRow[]>([]);
 
   const [preCompanyPct, setPreCompanyPct] = useState<number>(35);
