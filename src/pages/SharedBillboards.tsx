@@ -188,7 +188,7 @@ export default function SharedBillboards() {
     <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold">اللوحات المشتركة</h1>
-        <p className="text-muted-foreground mt-2">إدارة اللوحات الإعلان��ة المشتركة مع الشركاء</p>
+        <p className="text-muted-foreground mt-2">إدارة اللوحات الإعلانية المشتركة مع الشركاء</p>
       </div>
 
       <Alert className="bg-blue-50 border-blue-200">
@@ -298,7 +298,7 @@ export default function SharedBillboards() {
                           <div className="flex gap-2 items-center">
                             <Input
                               type="number"
-                              placeholder="مبلغ الإيجار"
+                              placeholder="مبلغ الإ��جار"
                               className="w-32"
                               value={rentAmountById[rowKey] || ''}
                               onChange={(e) => setRentAmountById(p => ({ ...p, [rowKey]: Number(e.target.value) }))}
@@ -311,6 +311,15 @@ export default function SharedBillboards() {
                               <CheckCircle2 className="h-4 w-4 mr-1" />
                               تطبيق
                             </Button>
+                            <SharedBillboardDialog
+                              billboard={bb}
+                              onSaved={load}
+                              trigger={
+                                <Button size="sm" variant="outline">
+                                  <Settings2 className="h-4 w-4 mr-1" /> إعداد الشركاء
+                                </Button>
+                              }
+                            />
                             <Button
                               size="sm"
                               variant="destructive"
