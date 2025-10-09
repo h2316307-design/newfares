@@ -83,6 +83,20 @@ export function PartnerDialog({ trigger, partner, onSaved }: PartnerDialogProps)
             <Label>رقم الهاتف</Label>
             <Input value={phone} onChange={(e)=>setPhone(e.target.value)} placeholder="09XXXXXXXX" />
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid gap-2">
+              <Label>نسبة الشريك (الاسترداد)</Label>
+              <Input type="number" value={defaultPre} onChange={(e)=>setDefaultPre(Number(e.target.value||0))} />
+            </div>
+            <div className="grid gap-2">
+              <Label>نسبة الشريك (بعد السداد)</Label>
+              <Input type="number" value={defaultPost} onChange={(e)=>setDefaultPost(Number(e.target.value||0))} />
+            </div>
+            <div className="grid gap-2">
+              <Label>رأس المال الافتراضي</Label>
+              <Input type="number" value={defaultCapital} onChange={(e)=>setDefaultCapital(Number(e.target.value||0))} />
+            </div>
+          </div>
         </div>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="secondary" onClick={()=>setOpen(false)}>إلغاء</Button>
