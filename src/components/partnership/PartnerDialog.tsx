@@ -16,18 +16,40 @@ export function PartnerDialog({ trigger, partner, onSaved }: PartnerDialogProps)
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [defaultPre, setDefaultPre] = useState<number>(35);
+  const [defaultPost, setDefaultPost] = useState<number>(50);
+  const [defaultCapital, setDefaultCapital] = useState<number>(0);
   const isEdit = Boolean(partner?.id);
 
   useEffect(() => {
+    const loadDefaults = async () => {
+      if (!partner?.id) return;
+      const { data } = await supabase.from('partners').select('default_partner_pre_pct, default_partner_post_pct, default_capital_contribution').eq('id', partner.id).single();
+      if (data) {
+        setDefaultPre(Number(data.default_partner_pre_pct ?? 35));
+        setDefaultPost(Number(data.default_partner_post_pct ?? 50));
+        setDefaultCapital(Number(data.default_capital_contribution ?? 0));
+      }
+    };
     if (open) {
       setName(partner?.name || '');
       setPhone(partner?.phone || '');
+      setDefaultPre(35); setDefaultPost(50); setDefaultCapital(0);
+      if (isEdit) loadDefaults();
     }
-  }, [open, partner]);
+  }, [open, partner, isEdit]);
 
   const save = async () => {
-    const payload: any = { name: name.trim(), phone: phone.trim() || null };
+    const payload: any = {
+      name: name.trim(),
+      phone: phone.trim() || null,
+      default_partner_pre_pct: Number(defaultPre||0),
+      default_partner_post_pct: Number(defaultPost||0),
+      default_capital_contribution: Number(defaultCapital||0),
+    };
     if (!payload.name) { toast.error('الاسم مطلوب'); return; }
+    if (payload.default_partner_pre_pct < 0 || payload.default_partner_post_pct < 0) { toast.error('النِسب يجب أن تكون موجبة'); return; }
+    if (payload.default_partner_pre_pct > 100 || payload.default_partner_post_pct > 100) { toast.error('النِسب لا تتجاوز 100%'); return; }
 
     try {
       let error;
