@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
-import { CheckCircle2, Info, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Info, TrendingUp, Settings2 } from 'lucide-react';
+import { SharedBillboardDialog } from '@/components/partnership/SharedBillboardDialog';
 
 export default function SharedBillboards() {
   const [list, setList] = useState<any[]>([]);
@@ -112,7 +113,7 @@ export default function SharedBillboards() {
       const phase = split.phase === 'recovery' ? 'مرحلة استرداد رأس المال' : 'مرحلة توزيع الأرباح';
       toast.success(
         `تم تطبيق الإيجار (${phase})\n` +
-        `• الفارس: ${split.company.toLocaleString()} د.ل (${split.phase === 'recovery' ? '35%' : '50%'})\n` +
+        `• الفا��س: ${split.company.toLocaleString()} د.ل (${split.phase === 'recovery' ? '35%' : '50%'})\n` +
         `• الشريك: ${split.partner.toLocaleString()} د.ل (${split.phase === 'recovery' ? '35%' : '50%'})\n` +
         (split.deduct > 0 ? `• خصم رأس المال: ${split.deduct.toLocaleString()} د.ل (30%)` : ''),
         { duration: 5000 }
