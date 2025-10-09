@@ -75,7 +75,7 @@ export default function SharedBillboards() {
       return;
     }
 
-    const split = calculateSplit(bb, rent);
+    const split = await calculateSplit(bb, rent);
 
     try {
       const payload: any = {};
@@ -200,7 +200,7 @@ export default function SharedBillboards() {
               <ul className="text-xs space-y-1">
                 <li>• الفارس: 35% من الإيجار</li>
                 <li>• الشريك: 35% من الإيجار</li>
-                <li>• رأس المال: 30% من الإيجار</li>
+                <li>• رأس المال: 30% من الإيج��ر</li>
               </ul>
             </div>
             <div className="bg-white p-3 rounded-lg border border-green-100">
