@@ -52,7 +52,7 @@ export function SharedBillboardDialog({ trigger, billboard, onSaved }: Props) {
           name: partners?.find(p=>p.id===r.partner_company_id)?.name || '',
           phone: partners?.find(p=>p.id===r.partner_company_id)?.phone || null,
           capital_contribution: Number(r.capital_contribution||0),
-          capital_remaining: Number(r.capital_remaining ?? r.capital_contribution || 0),
+          capital_remaining: Number((r.capital_remaining ?? r.capital_contribution ?? 0)),
           partner_pre_pct: Number(r.partner_pre_pct ?? 35),
           partner_post_pct: Number(r.partner_post_pct ?? 50),
         }));
