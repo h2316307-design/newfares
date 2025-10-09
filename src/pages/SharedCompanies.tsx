@@ -56,6 +56,7 @@ export default function SharedCompanies() {
           <div className="flex gap-2 mb-4">
             <Input placeholder="اسم الشركة" value={newName} onChange={(e)=>setNewName(e.target.value)} />
             <Button onClick={addCompany}>إضافة شركة</Button>
+            <PartnerDialog onSaved={load} trigger={<Button variant="outline">إضافة/تعديل</Button>} />
           </div>
 
           <Table>
@@ -65,7 +66,7 @@ export default function SharedCompanies() {
                 <TableHead>الإجمالي (المستحق)</TableHead>
                 <TableHead>المقبوض</TableHead>
                 <TableHead>المتبقي</TableHead>
-                <TableHead>إجراءات</TableHead>
+                <TableHead>إجر��ءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
