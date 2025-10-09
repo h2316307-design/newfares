@@ -36,21 +36,36 @@ export default function SharedBillboards() {
 
   useEffect(() => { load(); }, []);
 
-  const calculateSplit = (billboard: any, rent: number) => {
+  const fetchTerms = async (billboardId: number | string) => {
+    const { data } = await supabase
+      .from('shared_billboards')
+      .select('pre_company_pct, pre_capital_pct, post_company_pct, partner_company_id, partner_pre_pct, partner_post_pct')
+      .eq('billboard_id', billboardId);
+    return Array.isArray(data) ? data : [];
+  };
+
+  const calculateSplit = async (billboard: any, rent: number) => {
     const capital = Number(billboard.capital || 0);
     const capRem = Number(billboard.capital_remaining ?? capital);
+    const terms = await fetchTerms(billboard.ID || billboard.id);
+
+    const preCompanyPct = Number(terms?.[0]?.pre_company_pct ?? 35) / 100;
+    const preCapitalPct = Number(terms?.[0]?.pre_capital_pct ?? 30) / 100;
+    const postCompanyPct = Number(terms?.[0]?.post_company_pct ?? 50) / 100;
+
+    const partners = terms.map(t => ({ id: t.partner_company_id, pre: Number(t.partner_pre_pct ?? 35)/100, post: Number(t.partner_post_pct ?? 50)/100 }));
 
     if (capRem > 0) {
-      const company = rent * 0.35;
-      const partner = rent * 0.35;
-      const deduct = rent * 0.30;
+      const company = rent * preCompanyPct;
+      const partnerTotal = rent * partners.reduce((s,p)=>s + p.pre, 0);
+      const deduct = rent * preCapitalPct;
       const newCap = Math.max(0, capRem - deduct);
-      return { company, partner, deduct, newCap, phase: 'recovery' };
+      return { company, partnerTotal, partners, deduct, newCap, phase: 'recovery' };
     }
 
-    const company = rent * 0.5;
-    const partner = rent * 0.5;
-    return { company, partner, deduct: 0, newCap: 0, phase: 'profit_sharing' };
+    const company = rent * postCompanyPct;
+    const partnerTotal = rent * partners.reduce((s,p)=>s + p.post, 0);
+    return { company, partnerTotal, partners, deduct: 0, newCap: 0, phase: 'profit_sharing' };
   };
 
   const applyRent = async (bb: any) => {
@@ -113,7 +128,7 @@ export default function SharedBillboards() {
       const phase = split.phase === 'recovery' ? 'مرحلة استرداد رأس المال' : 'مرحلة توزيع الأرباح';
       toast.success(
         `تم تطبيق الإيجار (${phase})\n` +
-        `• الفا��س: ${split.company.toLocaleString()} د.ل (${split.phase === 'recovery' ? '35%' : '50%'})\n` +
+        `• الفارس: ${split.company.toLocaleString()} د.ل (${split.phase === 'recovery' ? '35%' : '50%'})\n` +
         `• الشريك: ${split.partner.toLocaleString()} د.ل (${split.phase === 'recovery' ? '35%' : '50%'})\n` +
         (split.deduct > 0 ? `• خصم رأس المال: ${split.deduct.toLocaleString()} د.ل (30%)` : ''),
         { duration: 5000 }
