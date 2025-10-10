@@ -16,6 +16,7 @@ export default function SharedBillboards() {
   const [loading, setLoading] = useState(true);
   const [rentAmountById, setRentAmountById] = useState<Record<string, number>>({});
   const [rentContractById, setRentContractById] = useState<Record<string, string>>({});
+  const [contractsById, setContractsById] = useState<Record<string, any[]>>({});
 
   const load = async () => {
     setLoading(true);
@@ -247,7 +248,7 @@ export default function SharedBillboards() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-bold">اسم اللو��ة</TableHead>
+                    <TableHead className="font-bold">اسم اللوحة</TableHead>
                     <TableHead className="font-bold">المقاس</TableHead>
                     <TableHead className="font-bold">الشركا��</TableHead>
                     <TableHead className="font-bold">رأس المال</TableHead>
