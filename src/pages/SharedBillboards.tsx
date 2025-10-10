@@ -78,6 +78,23 @@ export default function SharedBillboards() {
 
     const split = await calculateSplit(bb, rent);
 
+    // Optional: contract lookup
+    const rowKey = String(bb.ID || bb.id);
+    const contractNumberRaw = rentContractById[rowKey];
+    const contractNumber = contractNumberRaw ? Number(contractNumberRaw) : null;
+    let contractInfo: any = null;
+    if (contractNumber) {
+      try {
+        const { data: c } = await supabase
+          .from('Contract')
+          .select('"Contract Date", "End Date", customer_id, "Customer Name"')
+          .eq('Contract_Number', contractNumber)
+          .limit(1)
+          .single();
+        contractInfo = c || null;
+      } catch {}
+    }
+
     try {
       const payload: any = {};
       if (split.newCap !== undefined) {
@@ -171,7 +188,7 @@ export default function SharedBillboards() {
       return {
         badge: <Badge className="bg-green-600 hover:bg-green-700">مكتمل</Badge>,
         percentage: 100,
-        phase: 'توز��ع الأرباح'
+        phase: 'توزيع الأرباح'
       };
     }
 
