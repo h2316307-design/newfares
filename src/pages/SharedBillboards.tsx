@@ -47,6 +47,57 @@ export default function SharedBillboards() {
     return Array.isArray(data) ? data : [];
   };
 
+  const getRentFromContract = (contract: any, billboardId: string | number) => {
+    try {
+      const raw = contract.billboards_data;
+      if (!raw) return 0;
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        const found = arr.find((it: any) => String(it.id) === String(billboardId));
+        if (found && found.contractPrice != null) return Number(found.contractPrice) || 0;
+      }
+    } catch {}
+    return 0;
+  };
+
+  const loadContractsFor = async (billboardId: number | string) => {
+    const idStr = String(billboardId);
+    try {
+      const results: any[] = [];
+      const { data: byIds } = await supabase
+        .from('Contract')
+        .select('Contract_Number, "Customer Name", "Ad Type", "Total Rent", billboards_data, billboard_ids')
+        .ilike('billboard_ids', `%${idStr}%`);
+      if (Array.isArray(byIds)) results.push(...byIds);
+
+      const { data: byJson } = await supabase
+        .from('Contract')
+        .select('Contract_Number, "Customer Name", "Ad Type", "Total Rent", billboards_data, billboard_ids')
+        .ilike('billboards_data', `%"id":"${idStr}"%`);
+      if (Array.isArray(byJson)) results.push(...byJson);
+
+      const { data: byCol } = await supabase
+        .from('Contract')
+        .select('Contract_Number, "Customer Name", "Ad Type", "Total Rent", billboards_data, billboard_ids, billboard_id')
+        .eq('billboard_id', billboardId);
+      if (Array.isArray(byCol)) results.push(...byCol);
+
+      const uniq = Object.values((results || []).reduce((acc: any, cur: any) => {
+        acc[cur.Contract_Number] = cur; return acc;
+      }, {}));
+
+      setContractsById((p) => ({ ...p, [idStr]: uniq as any[] }));
+    } catch (e) {
+      console.warn('loadContractsFor error', e);
+    }
+  };
+
+  useEffect(() => {
+    if (list && list.length > 0) {
+      list.forEach((bb:any) => loadContractsFor(bb.ID || bb.id));
+    }
+  }, [list]);
+
   const calculateSplit = async (billboard: any, rent: number) => {
     const capital = Number(billboard.capital || 0);
     const capRem = Number(billboard.capital_remaining ?? capital);
