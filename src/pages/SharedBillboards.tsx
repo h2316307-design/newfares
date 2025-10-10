@@ -271,7 +271,7 @@ export default function SharedBillboards() {
                   <TableRow>
                     <TableHead className="font-bold">اسم اللوحة</TableHead>
                     <TableHead className="font-bold">المقاس</TableHead>
-                    <TableHead className="font-bold">الشركاء</TableHead>
+                    <TableHead className="font-bold">الشركا��</TableHead>
                     <TableHead className="font-bold">رأس المال</TableHead>
                     <TableHead className="font-bold">المتبقي</TableHead>
                     <TableHead className="font-bold">الحالة</TableHead>
@@ -332,10 +332,17 @@ export default function SharedBillboards() {
                           <div className="flex gap-2 items-center">
                             <Input
                               type="number"
-                              placeholder="مبلغ الإ��جار"
+                              placeholder="مبلغ الإيجار"
                               className="w-32"
                               value={rentAmountById[rowKey] || ''}
                               onChange={(e) => setRentAmountById(p => ({ ...p, [rowKey]: Number(e.target.value) }))}
+                            />
+                            <Input
+                              type="number"
+                              placeholder="رقم العقد (اختياري)"
+                              className="w-40"
+                              value={rentContractById[rowKey] || ''}
+                              onChange={(e) => setRentContractById(p => ({ ...p, [rowKey]: e.target.value }))}
                             />
                             <Button
                               size="sm"
