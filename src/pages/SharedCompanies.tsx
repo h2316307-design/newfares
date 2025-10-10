@@ -85,8 +85,19 @@ export default function SharedCompanies() {
                   </TableCell>
                   <TableCell>-</TableCell>
                   <TableCell>-</TableCell>
-                  <TableCell>
+                  <TableCell className="space-x-2 space-x-reverse">
                     <PartnerDialog partner={c} onSaved={load} trigger={<Button size="sm" variant="outline">تعديل</Button>} />
+                    <Button size="sm" variant="destructive" onClick={async ()=>{
+                      const ok = window.confirm('هل تريد حذف هذه الشركة؟ سيتم إزالة ربطها باللوحات المشتركة.');
+                      if (!ok) return;
+                      try {
+                        await supabase.from('shared_billboards').delete().eq('partner_company_id', c.id);
+                        const { error } = await supabase.from('partners').delete().eq('id', c.id);
+                        if (error) throw error;
+                        toast.success('ت�� حذف الشركة');
+                        load();
+                      } catch(e:any) { toast.error(e?.message || 'فشل حذف الشركة'); }
+                    }}>حذف</Button>
                   </TableCell>
                 </TableRow>
               ))}
