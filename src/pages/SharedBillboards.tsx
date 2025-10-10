@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { CheckCircle2, Info, TrendingUp, Settings2 } from 'lucide-react';
 import { SharedBillboardDialog } from '@/components/partnership/SharedBillboardDialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function SharedBillboards() {
   const [list, setList] = useState<any[]>([]);
@@ -239,7 +240,7 @@ export default function SharedBillboards() {
               </ul>
             </div>
             <div className="bg-white p-3 rounded-lg border border-green-100">
-              <div className="font-medium text-green-900 mb-1">🟢 مرحلة توزيع الأرباح (بعد اكتمال رأس المال)</div>
+              <div className="font-medium text-green-900 mb-1">🟢 مرحلة ت��زيع الأرباح (بعد اكتمال رأس المال)</div>
               <ul className="text-xs space-y-1">
                 <li>• الفارس: 50% من الإيجار</li>
                 <li>• الشريك: 50% من الإيجار</li>
