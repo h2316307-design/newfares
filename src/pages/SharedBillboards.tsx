@@ -226,29 +226,6 @@ export default function SharedBillboards() {
         <p className="text-muted-foreground mt-2">إدارة اللوحات الإعلانية المشتركة مع الشركاء</p>
       </div>
 
-      <Alert className="bg-blue-50 border-blue-200">
-        <Info className="h-5 w-5 text-blue-600" />
-        <AlertDescription className="text-sm space-y-2 text-gray-700">
-          <div className="font-semibold text-blue-900 mb-2">نظام توزيع الإيرادات:</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="bg-white p-3 rounded-lg border border-blue-100">
-              <div className="font-medium text-blue-900 mb-1">🔵 مرحلة استرداد رأس المال</div>
-              <ul className="text-xs space-y-1">
-                <li>• الفارس: 35% من الإيجار</li>
-                <li>• الشريك: 35% من الإيجار</li>
-                <li>• رأس المال: 30% من الإيجار</li>
-              </ul>
-            </div>
-            <div className="bg-white p-3 rounded-lg border border-green-100">
-              <div className="font-medium text-green-900 mb-1">🟢 مرحلة ت��زيع الأرباح (بعد اكتمال رأس المال)</div>
-              <ul className="text-xs space-y-1">
-                <li>• الفارس: 50% من الإيجار</li>
-                <li>• الشريك: 50% من الإيجار</li>
-              </ul>
-            </div>
-          </div>
-        </AlertDescription>
-      </Alert>
 
       <Card>
         <CardHeader>
@@ -270,7 +247,7 @@ export default function SharedBillboards() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-bold">اسم اللوحة</TableHead>
+                    <TableHead className="font-bold">اسم اللو��ة</TableHead>
                     <TableHead className="font-bold">المقاس</TableHead>
                     <TableHead className="font-bold">الشركا��</TableHead>
                     <TableHead className="font-bold">رأس المال</TableHead>
