@@ -20,6 +20,7 @@ import PricingList from "./pages/PricingList";
 import Settings from "./pages/Settings";
 import Reports from "./pages/Reports";
 import Expenses from "./pages/Expenses";
+import Salaries from "./pages/Salaries";
 import Customers from "./pages/Customers";
 import CustomerMerge from "./pages/CustomerMerge";
 import BookingRequests from "./pages/BookingRequests";
@@ -173,6 +174,16 @@ const App = () => (
                 <ProtectedRoute requireAdmin>
                   <MainLayout>
                     <Expenses />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/salaries"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <MainLayout>
+                    <Salaries />
                   </MainLayout>
                 </ProtectedRoute>
               }

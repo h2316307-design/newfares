@@ -54,6 +54,7 @@ const sidebarSections: SidebarSection[] = [
       { id: 'customer_billing', label: 'فواتير العملاء', icon: Receipt, path: '/admin/customer-billing' },
       { id: 'payments', label: 'الدفعات والإيصالات', icon: CreditCard, path: '/admin/payments' },
       { id: 'expenses', label: 'المصروفات', icon: Wallet, path: '/admin/expenses' },
+      { id: 'salaries', label: 'الرواتب', icon: Users, path: '/admin/salaries' },
       { id: 'revenue_management', label: 'إدارة الإيرادات', icon: TrendingUp, path: '/admin/revenue-management' },
       { id: 'expense_management', label: 'إدارة المصروفات', icon: TrendingDown, path: '/admin/expense-management' },
       { id: 'print_invoices', label: 'فواتير الطباعة', icon: Printer, path: '/admin/print-invoices' },
