@@ -290,7 +290,7 @@ export default function SharedBillboards() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">جاري التحميل...</div>
+            <div className="text-center py-8 text-muted-foreground">جاري ا��تحميل...</div>
           ) : list.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">لا توجد لوحات مشتركة</div>
           ) : (
@@ -366,7 +366,7 @@ export default function SharedBillboards() {
                                 const listC = contractsById[String(bb.ID || bb.id)] || [];
                                 const contract = listC.find((c:any)=> String(c.Contract_Number) === String(val));
                                 const amt = contract ? getRentFromContract(contract, bb.ID || bb.id) : 0;
-                                if (amt && amt > 0) setRentAmountById((p)=>({ ...p, [rowKey]: amt }));
+                                setRentAmountById((p)=>({ ...p, [rowKey]: Number(amt || 0) }));
                               }}
                             >
                               <SelectTrigger className="w-56">
