@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,10 +13,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, DollarSign, Plus, Calculator, TrendingUp, TrendingDown, Lock, Calendar, Hash } from 'lucide-react';
 
 interface Contract {
-  id: number;
+  id: string;
   contract_number: string;
   customer_name: string;
-  fee: number;
+  feePercent: number;
+  feeAmount: number;
   start_date: string;
   total_amount: number;
   status: string;
@@ -43,6 +45,56 @@ interface PeriodClosure {
   remaining_balance: number;
   notes?: string;
 }
+
+const toNumber = (value: unknown): number => {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+};
+
+const normalizeContract = (record: any): Contract => {
+  const contractNumberRaw = record?.Contract_Number ?? record?.contract_number ?? record?.id ?? record?.ID ?? '';
+  const contractNumber = contractNumberRaw ? String(contractNumberRaw) : '';
+  const totalAmount = toNumber(record?.['Total Rent'] ?? record?.rent_cost ?? record?.total_amount);
+  const feeAmountRaw = toNumber(record?.fee ?? record?.fee_amount);
+  let feePercent = toNumber(record?.operating_fee_rate);
+
+  if (feePercent <= 0 && totalAmount > 0 && feeAmountRaw > 0) {
+    feePercent = (feeAmountRaw / totalAmount) * 100;
+  }
+
+  if (feePercent <= 0) {
+    feePercent = 3;
+  }
+
+  const normalizedFeePercent = Math.round(feePercent * 100) / 100;
+  const feeAmount = feeAmountRaw > 0 ? feeAmountRaw : Math.round(totalAmount * (normalizedFeePercent / 100));
+
+  const fallbackIdSource = record?.id ?? record?.ID ?? contractNumber;
+  const id = fallbackIdSource ? String(fallbackIdSource) : `contract-${Math.random().toString(36).slice(2, 10)}`;
+
+  return {
+    id,
+    contract_number: contractNumber,
+    customer_name: record?.['Customer Name'] ?? record?.customer_name ?? '',
+    feePercent: normalizedFeePercent,
+    feeAmount,
+    start_date: record?.['Contract Date'] ?? record?.start_date ?? record?.['Start Date'] ?? '',
+    total_amount: totalAmount,
+    status: record?.status ?? 'active',
+  };
+};
+
+const formatPercent = (value: number): string => {
+  if (!Number.isFinite(value)) {
+    return '0';
+  }
+  return value.toLocaleString('ar-LY', {
+    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
+  });
+};
 
 export default function Expenses() {
   const [contracts, setContracts] = useState<Contract[]>([]);
@@ -89,23 +141,16 @@ export default function Expenses() {
         console.error('خطأ في تحميل العقود:', contractsError);
         toast.error('فشل في تحميل العقود');
       } else {
-        const mappedContracts = (contractsData || []).map(c => ({
-          id: c.id,
-          contract_number: c.Contract_Number || c.contract_number || c.id?.toString() || '',
-          customer_name: c['Customer Name'] || c.customer_name || '',
-          fee: Number(c.fee) || 3,
-          start_date: c['Contract Date'] || c.start_date || c['Start Date'] || '',
-          total_amount: Number(c['Total Rent']) || Number(c.rent_cost) || Number(c.total_amount) || 0,
-          status: c.status || 'active'
-        }));
-        
-        // ترتيب إضافي في الكود للتأكد
+        const mappedContracts = (contractsData || []).map(normalizeContract);
+
         mappedContracts.sort((a, b) => {
-          const numA = parseInt(a.contract_number) || 0;
-          const numB = parseInt(b.contract_number) || 0;
-          return numB - numA; // ترتيب تنازلي
+          const numA = parseInt(a.contract_number, 10);
+          const numB = parseInt(b.contract_number, 10);
+          const safeA = Number.isFinite(numA) ? numA : 0;
+          const safeB = Number.isFinite(numB) ? numB : 0;
+          return safeB - safeA;
         });
-        
+
         setContracts(mappedContracts);
       }
 
@@ -241,10 +286,11 @@ export default function Expenses() {
       }
       
       const total = contract.total_amount || 0;
-      const feePercent = contract.fee || 3;
-      return sum + Math.round(total * (feePercent / 100));
+      const feePercent = contract.feePercent ?? 3;
+      const feeAmount = contract.feeAmount > 0 ? contract.feeAmount : Math.round(total * (feePercent / 100));
+      return sum + feeAmount;
     }, 0);
-    
+
     const totalWithdrawn = withdrawals.reduce((sum, w) => sum + w.amount, 0);
     const remainingPool = Math.max(0, poolTotal - totalWithdrawn);
 
@@ -382,8 +428,9 @@ export default function Expenses() {
 
     // Calculate totals for this range
     const totalAmount = contractsInRange.reduce((sum, contract) => {
-      const feePercent = contract.fee || 3;
-      return sum + Math.round(contract.total_amount * (feePercent / 100));
+      const feePercent = contract.feePercent ?? 3;
+      const feeAmount = contract.feeAmount > 0 ? contract.feeAmount : Math.round(contract.total_amount * (feePercent / 100));
+      return sum + feeAmount;
     }, 0);
 
     const totalWithdrawn = 0;
@@ -565,9 +612,10 @@ export default function Expenses() {
               {(() => {
                 const contractsInRange = getContractsInRange();
                 const totalAmount = contractsInRange.reduce((sum, contract) => {
-                  const feePercent = contract.fee || 3;
-                  return sum + Math.round(contract.total_amount * (feePercent / 100));
-                }, 0);
+      const feePercent = contract.feePercent ?? 3;
+      const feeAmount = contract.feeAmount > 0 ? contract.feeAmount : Math.round(contract.total_amount * (feePercent / 100));
+      return sum + feeAmount;
+    }, 0);
                 
                 return (
                   <>
@@ -633,22 +681,25 @@ export default function Expenses() {
                 {contracts.map(contract => {
                   const id = contract.id.toString();
                   const total = contract.total_amount || 0;
-                  const feePercent = contract.fee || 3;
-                  const calculatedAmount = Math.round(total * (feePercent / 100));
+                  const feePercent = contract.feePercent ?? 3;
+                  const calculatedAmount = contract.feeAmount > 0 ? contract.feeAmount : Math.round(total * (feePercent / 100));
                   const excluded = excludedIds.has(id);
                   const closed = isContractClosed(contract);
-                  
+                  const formattedPercent = formatPercent(feePercent);
+                  const formattedAmount = calculatedAmount.toLocaleString('ar-LY', { maximumFractionDigits: 2 });
+                  const formattedTotal = total.toLocaleString('ar-LY', { maximumFractionDigits: 2 });
+
                   return (
                     <TableRow key={id}>
                       <TableCell className="expenses-contract-number text-right">{contract.contract_number}</TableCell>
                       <TableCell className="text-right">{contract.customer_name}</TableCell>
                       <TableCell className="text-right">{contract.start_date ? new Date(contract.start_date).toLocaleDateString('ar-LY') : '—'}</TableCell>
                       <TableCell className="text-right">
-                        <Badge variant="secondary">{feePercent}%</Badge>
+                        <Badge variant="secondary">{formattedPercent}%</Badge>
                       </TableCell>
-                      <TableCell className="text-right">{total.toLocaleString()} د.ل</TableCell>
+                      <TableCell className="text-right">{formattedTotal} د.ل</TableCell>
                       <TableCell className={`text-right ${excluded || closed ? 'expenses-amount-excluded' : 'expenses-amount-calculated'}`}>
-                        {calculatedAmount.toLocaleString()} د.ل
+                        {formattedAmount} د.ل
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end">
@@ -854,7 +905,7 @@ export default function Expenses() {
           <UIDialog.DialogHeader>
             <UIDialog.DialogTitle>تسكير حساب</UIDialog.DialogTitle>
             <UIDialog.DialogDescription>
-              اختر طريقة التسكير: بالفترة الزمنية أو بنطاق أرقام العقود
+              ا��تر طريقة التسكير: بالفترة الزمنية أو بنطاق أرقام العقود
             </UIDialog.DialogDescription>
           </UIDialog.DialogHeader>
           <div className="expenses-dialog-form">
