@@ -153,7 +153,23 @@ export default function SharedBillboards() {
         { duration: 5000 }
       );
 
+      try {
+        await supabase.from('billboard_rental_history').insert({
+          billboard_id: bb.ID || bb.id,
+          contract_number: contractNumber || null,
+          customer_id: contractInfo?.customer_id || null,
+          customer_name: contractInfo?.['Customer Name'] || null,
+          start_date: contractInfo?.['Contract Date'] || null,
+          end_date: contractInfo?.['End Date'] || null,
+          rent_amount: rent,
+          phase: split.phase,
+        });
+      } catch (e) {
+        console.warn('rental history insert failed', e);
+      }
+
       setRentAmountById(p => ({ ...p, [String(bb.ID || bb.id)]: 0 }));
+      setRentContractById(p => ({ ...p, [String(bb.ID || bb.id)]: '' }));
       load();
     } catch (e: any) {
       console.error('apply rent error', e);
