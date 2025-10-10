@@ -14,6 +14,7 @@ export default function SharedBillboards() {
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [rentAmountById, setRentAmountById] = useState<Record<string, number>>({});
+  const [rentContractById, setRentContractById] = useState<Record<string, string>>({});
 
   const load = async () => {
     setLoading(true);
@@ -170,7 +171,7 @@ export default function SharedBillboards() {
       return {
         badge: <Badge className="bg-green-600 hover:bg-green-700">مكتمل</Badge>,
         percentage: 100,
-        phase: 'توزيع الأرباح'
+        phase: 'توز��ع الأرباح'
       };
     }
 
