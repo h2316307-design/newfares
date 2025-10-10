@@ -360,6 +360,27 @@ export default function SharedBillboards() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2 items-center">
+                            <Select
+                              value={rentContractById[rowKey] || ''}
+                              onValueChange={(val) => {
+                                setRentContractById((p)=>({ ...p, [rowKey]: val }));
+                                const listC = contractsById[String(bb.ID || bb.id)] || [];
+                                const contract = listC.find((c:any)=> String(c.Contract_Number) === String(val));
+                                const amt = contract ? getRentFromContract(contract, bb.ID || bb.id) : 0;
+                                if (amt && amt > 0) setRentAmountById((p)=>({ ...p, [rowKey]: amt }));
+                              }}
+                            >
+                              <SelectTrigger className="w-56">
+                                <SelectValue placeholder="اختر عقداً (يملأ الإيجار تلقائياً)" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {(contractsById[String(bb.ID || bb.id)] || []).map((c:any) => (
+                                  <SelectItem key={c.Contract_Number} value={String(c.Contract_Number)}>
+                                    عقد {c.Contract_Number} - {c['Customer Name'] || ''}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <Input
                               type="number"
                               placeholder="مبلغ الإيجار"
