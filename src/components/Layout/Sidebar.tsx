@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { Chrome as Home, MapPin, Trash2, Wrench, FileText, Users, Merge, TrendingUp, TrendingDown, CreditCard, DollarSign, Calculator, Calendar, ChartBar as BarChart3, Settings, LogOut, Printer } from 'lucide-react';
+import { Chrome as Home, MapPin, Trash2, Wrench, FileText, Users, Merge, TrendingUp, TrendingDown, CreditCard, DollarSign, Calculator, Calendar, ChartBar as BarChart3, Settings, LogOut, Printer, Wallet, Receipt } from 'lucide-react';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
@@ -51,11 +51,12 @@ const sidebarSections: SidebarSection[] = [
     id: 'finance',
     title: 'الإدارة المالية',
     items: [
+      { id: 'customer_billing', label: 'فواتير العملاء', icon: Receipt, path: '/admin/customer-billing' },
+      { id: 'payments', label: 'الدفعات والإيصالات', icon: CreditCard, path: '/admin/payments' },
+      { id: 'expenses', label: 'المصروفات', icon: Wallet, path: '/admin/expenses' },
       { id: 'revenue_management', label: 'إدارة الإيرادات', icon: TrendingUp, path: '/admin/revenue-management' },
       { id: 'expense_management', label: 'إدارة المصروفات', icon: TrendingDown, path: '/admin/expense-management' },
-      { id: 'payments', label: 'الدفعات والإيصالات', icon: CreditCard, path: '/admin/payments' },
       { id: 'print_invoices', label: 'فواتير الطباعة', icon: Printer, path: '/admin/print-invoices' },
-      { id: 'expenses', label: 'المصروفات القديمة', icon: DollarSign, path: '/admin/expenses' },
     ],
   },
   {
